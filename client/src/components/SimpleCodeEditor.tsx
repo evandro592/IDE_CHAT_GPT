@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { 
   Save, 
@@ -9,19 +8,17 @@ import {
   X,
   Circle
 } from "lucide-react";
-import { setupMonaco, disposeMonaco } from "@/lib/monaco-setup";
 import type { File as FileType } from "@shared/schema";
 
-interface CodeEditorProps {
+interface SimpleCodeEditorProps {
   file: FileType | null;
   content: string;
   onChange: (content: string) => void;
   onSave: () => void;
 }
 
-export default function CodeEditor({ file, content, onChange, onSave }: CodeEditorProps) {
-  const editorRef = useRef<HTMLDivElement>(null);
-  const monacoRef = useRef<any>(null);
+export default function SimpleCodeEditor({ file, content, onChange, onSave }: SimpleCodeEditorProps) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [openTabs, setOpenTabs] = useState<FileType[]>([]);
   const [activeTab, setActiveTab] = useState<string>("");
 
@@ -35,49 +32,8 @@ export default function CodeEditor({ file, content, onChange, onSave }: CodeEdit
   }, [file]);
 
   useEffect(() => {
-    if (editorRef.current && file && content !== undefined) {
-      setupMonaco(editorRef.current, content, onChange, file?.language || 'javascript')
-        .then((editor) => {
-          monacoRef.current = editor;
-        })
-        .catch((error) => {
-          console.error('Failed to setup Monaco:', error);
-          // Fallback to simple textarea
-          const textarea = document.createElement('textarea');
-          textarea.value = content;
-          textarea.style.width = '100%';
-          textarea.style.height = '100%';
-          textarea.style.border = 'none';
-          textarea.style.outline = 'none';
-          textarea.style.resize = 'none';
-          textarea.style.fontFamily = 'monospace';
-          textarea.style.fontSize = '14px';
-          textarea.style.padding = '10px';
-          textarea.style.backgroundColor = 'var(--ide-bg)';
-          textarea.style.color = 'var(--ide-text)';
-          textarea.addEventListener('input', (e) => {
-            onChange((e.target as HTMLTextAreaElement).value);
-          });
-          editorRef.current!.appendChild(textarea);
-        });
-    }
-    
-    // Listen for save events from Monaco
-    const handleSave = () => onSave();
-    window.addEventListener('monaco-save', handleSave);
-    
-    return () => {
-      window.removeEventListener('monaco-save', handleSave);
-    };
-  }, [file, content, onChange, onSave]);
-
-  useEffect(() => {
-    if (monacoRef.current && content !== undefined && content !== monacoRef.current.getValue()) {
-      const position = monacoRef.current.getPosition();
-      monacoRef.current.setValue(content);
-      if (position) {
-        monacoRef.current.setPosition(position);
-      }
+    if (textareaRef.current && content !== undefined) {
+      textareaRef.current.value = content;
     }
   }, [content]);
 
@@ -89,7 +45,6 @@ export default function CodeEditor({ file, content, onChange, onSave }: CodeEdit
         setActiveTab(remainingTabs[0].id.toString());
       } else {
         setActiveTab("");
-        disposeMonaco();
       }
     }
   };
@@ -114,6 +69,38 @@ export default function CodeEditor({ file, content, onChange, onSave }: CodeEdit
       e.preventDefault();
       onSave();
     }
+    
+    // Tab support
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      const textarea = e.target as HTMLTextAreaElement;
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const value = textarea.value;
+      
+      if (e.shiftKey) {
+        // Remove tab
+        const lineStart = value.lastIndexOf('\n', start - 1) + 1;
+        if (value.substring(lineStart, lineStart + 2) === '  ') {
+          const newValue = value.substring(0, lineStart) + value.substring(lineStart + 2);
+          onChange(newValue);
+          setTimeout(() => {
+            textarea.selectionStart = textarea.selectionEnd = start - 2;
+          }, 0);
+        }
+      } else {
+        // Add tab
+        const newValue = value.substring(0, start) + '  ' + value.substring(end);
+        onChange(newValue);
+        setTimeout(() => {
+          textarea.selectionStart = textarea.selectionEnd = start + 2;
+        }, 0);
+      }
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    onChange(e.target.value);
   };
 
   return (
@@ -153,26 +140,35 @@ export default function CodeEditor({ file, content, onChange, onSave }: CodeEdit
           </div>
           
           <div className="ml-auto px-4 py-2 flex items-center space-x-2">
-            <Button variant="ghost" size="icon" className="h-6 w-6" title="Format Code">
+            <Button variant="ghost" size="icon" className="h-6 w-6" title="Formatar Código">
               <AlignLeft className="h-3 w-3" />
             </Button>
-            <Button variant="ghost" size="icon" className="h-6 w-6" title="Find & Replace">
+            <Button variant="ghost" size="icon" className="h-6 w-6" title="Localizar e Substituir">
               <Search className="h-3 w-3" />
             </Button>
-            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={onSave} title="Save">
+            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={onSave} title="Salvar">
               <Save className="h-3 w-3" />
             </Button>
           </div>
         </div>
       )}
       
-      {/* Monaco Editor */}
+      {/* Simple Text Editor */}
       <div className="flex-1 relative">
         {file ? (
-          <div 
-            ref={editorRef} 
-            className="h-full w-full"
-            style={{ minHeight: '400px' }}
+          <textarea
+            ref={textareaRef}
+            className="w-full h-full resize-none border-none outline-none p-4 ide-bg ide-text code-editor"
+            style={{
+              fontFamily: 'JetBrains Mono, Fira Code, Monaco, Cascadia Code, Roboto Mono, monospace',
+              fontSize: '14px',
+              lineHeight: '1.5',
+              tabSize: 2
+            }}
+            defaultValue={content}
+            onChange={handleChange}
+            placeholder="Digite seu código aqui..."
+            spellCheck={false}
           />
         ) : (
           <div className="h-full flex items-center justify-center text-[var(--ide-text-secondary)]">

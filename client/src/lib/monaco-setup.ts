@@ -1,54 +1,12 @@
-import * as monaco from 'monaco-editor';
-
-// Configure Monaco workers for Vite environment
-if (typeof window !== 'undefined') {
-  window.MonacoEnvironment = {
-    getWorker(workerId: string, label: string) {
-      const getWorkerModule = (moduleUrl: string, label: string) => {
-        return new Worker(self.MonacoEnvironment!.getWorkerUrl!(moduleUrl, label), {
-          name: label,
-          type: 'module',
-        });
-      };
-
-      switch (label) {
-        case 'json':
-          return getWorkerModule('/monaco-editor/esm/vs/language/json/json.worker', 'json');
-        case 'css':
-        case 'scss':
-        case 'less':
-          return getWorkerModule('/monaco-editor/esm/vs/language/css/css.worker', 'css');
-        case 'html':
-        case 'handlebars':
-        case 'razor':
-          return getWorkerModule('/monaco-editor/esm/vs/language/html/html.worker', 'html');
-        case 'typescript':
-        case 'javascript':
-          return getWorkerModule('/monaco-editor/esm/vs/language/typescript/ts.worker', 'typescript');
-        default:
-          return getWorkerModule('/monaco-editor/esm/vs/editor/editor.worker', 'editor');
-      }
-    },
-    getWorkerUrl(moduleId: string, label: string) {
-      return `data:text/javascript;charset=utf-8,${encodeURIComponent(`
-        self.MonacoEnvironment = {
-          baseUrl: 'https://unpkg.com/monaco-editor@0.44.0/min/'
-        };
-        importScripts('https://unpkg.com/monaco-editor@0.44.0/min/vs/base/worker/workerMain.js');
-      `)}`;
-    }
-  };
-}
-
 // Monaco Editor setup and configuration
-let monacoInstance: monaco.editor.IStandaloneCodeEditor | null = null;
+let monacoInstance: any = null;
 
 export async function setupMonaco(
   container: HTMLElement,
   initialContent: string,
   onChange: (content: string) => void,
   language: string = 'javascript'
-): Promise<monaco.editor.IStandaloneCodeEditor> {
+): Promise<any> {
   
   // Dispose existing instance
   if (monacoInstance) {
@@ -58,17 +16,37 @@ export async function setupMonaco(
   // Clear container
   container.innerHTML = '';
 
-  // Wait for Monaco to be available
-  if (typeof window !== 'undefined' && !(window as any).monaco) {
-    await new Promise((resolve) => {
-      if ((window as any).require) {
-        (window as any).require(['vs/editor/editor.main'], resolve);
-      } else {
-        // Fallback - wait a bit and try again
-        setTimeout(resolve, 100);
-      }
-    });
-  }
+  // Wait for Monaco to be available from CDN
+  return new Promise((resolve, reject) => {
+    if (typeof window !== 'undefined' && (window as any).require) {
+      (window as any).require(['vs/editor/editor.main'], () => {
+        try {
+          const monaco = (window as any).monaco;
+          initializeMonaco(monaco, container, initialContent, onChange, language, resolve);
+        } catch (error) {
+          reject(error);
+        }
+      });
+    } else {
+      // Fallback - check periodically for monaco
+      const checkMonaco = () => {
+        if ((window as any).monaco) {
+          try {
+            const monaco = (window as any).monaco;
+            initializeMonaco(monaco, container, initialContent, onChange, language, resolve);
+          } catch (error) {
+            reject(error);
+          }
+        } else {
+          setTimeout(checkMonaco, 100);
+        }
+      };
+      checkMonaco();
+    }
+  });
+}
+
+function initializeMonaco(monaco: any, container: HTMLElement, initialContent: string, onChange: (content: string) => void, language: string, resolve: (value: any) => void) {
 
   // Configure Monaco themes
   monaco.editor.defineTheme('ide-dark', {
@@ -206,7 +184,7 @@ export async function setupMonaco(
   // Focus the editor
   monacoInstance.focus();
 
-  return monacoInstance;
+  resolve(monacoInstance);
 }
 
 export function updateMonacoContent(content: string) {
@@ -215,15 +193,6 @@ export function updateMonacoContent(content: string) {
     monacoInstance.setValue(content);
     if (position) {
       monacoInstance.setPosition(position);
-    }
-  }
-}
-
-export function updateMonacoLanguage(language: string) {
-  if (monacoInstance) {
-    const model = monacoInstance.getModel();
-    if (model) {
-      monaco.editor.setModelLanguage(model, language);
     }
   }
 }
@@ -238,64 +207,3 @@ export function disposeMonaco() {
     monacoInstance = null;
   }
 }
-
-// Auto-completion providers
-export function registerCustomCompletions() {
-  // Register custom completion provider for JavaScript/TypeScript
-  monaco.languages.registerCompletionItemProvider('javascript', {
-    provideCompletionItems: (model, position) => {
-      const suggestions = [
-        {
-          label: 'console.log',
-          kind: monaco.languages.CompletionItemKind.Function,
-          insertText: 'console.log(${1:});',
-          insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-          documentation: 'Log output to console'
-        },
-        {
-          label: 'function',
-          kind: monaco.languages.CompletionItemKind.Keyword,
-          insertText: 'function ${1:name}(${2:params}) {\n\t${3:// code}\n}',
-          insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-          documentation: 'Function declaration'
-        },
-        {
-          label: 'const',
-          kind: monaco.languages.CompletionItemKind.Keyword,
-          insertText: 'const ${1:name} = ${2:value};',
-          insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-          documentation: 'Constant declaration'
-        }
-      ];
-
-      return { suggestions };
-    }
-  });
-
-  // Similar for TypeScript
-  monaco.languages.registerCompletionItemProvider('typescript', {
-    provideCompletionItems: (model, position) => {
-      const suggestions = [
-        {
-          label: 'interface',
-          kind: monaco.languages.CompletionItemKind.Interface,
-          insertText: 'interface ${1:Name} {\n\t${2:property}: ${3:type};\n}',
-          insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-          documentation: 'Interface declaration'
-        },
-        {
-          label: 'type',
-          kind: monaco.languages.CompletionItemKind.Class,
-          insertText: 'type ${1:Name} = ${2:type};',
-          insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-          documentation: 'Type alias'
-        }
-      ];
-
-      return { suggestions };
-    }
-  });
-}
-
-// Initialize custom completions
-registerCustomCompletions();

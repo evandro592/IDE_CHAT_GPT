@@ -137,13 +137,14 @@
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
 }
 
-/* Monaco Editor Integration */
-.monaco-editor {
+/* Simple Code Editor Styles */
+.code-editor {
   background-color: var(--ide-bg) !important;
+  color: var(--ide-text) !important;
 }
 
-.monaco-editor .monaco-editor-background {
-  background-color: var(--ide-bg) !important;
+.code-editor::placeholder {
+  color: var(--ide-text-secondary) !important;
 }
 
 /* Responsive utilities */

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import FileTree from "@/components/FileTree";
-import CodeEditor from "@/components/CodeEditor";
+import SimpleCodeEditor from "@/components/SimpleCodeEditor";
 import ChatAI from "@/components/ChatAI";
 import ResizablePanel from "@/components/ResizablePanel";
 import MobileKeyboard from "@/components/MobileKeyboard";
@@ -228,7 +228,7 @@ export default function IDE() {
           </TabsContent>
 
           <TabsContent value="editor" className="flex-1 mt-0 flex flex-col">
-            <CodeEditor
+            <SimpleCodeEditor
               file={currentFile}
               content={editorContent}
               onChange={handleEditorChange}
@@ -296,7 +296,7 @@ export default function IDE() {
         </ResizablePanel>
 
         <ResizablePanel defaultSize={60} minSize={30}>
-          <CodeEditor
+          <SimpleCodeEditor
             file={currentFile}
             content={editorContent}
             onChange={handleEditorChange}
