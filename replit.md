@@ -108,6 +108,7 @@ The application follows a modern full-stack architecture with clear separation b
 - June 24, 2025. Fixed Monaco Editor integration for real-world usage
 - June 24, 2025. Implemented reliable SimpleCodeEditor maintaining full AI code editing capabilities
 - June 24, 2025. Added File System Access API integration for importing folders directly from browser
+- June 24, 2025. Created local setup documentation with complete installation instructions
 
 ## User Preferences
 
