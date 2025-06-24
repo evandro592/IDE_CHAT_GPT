@@ -106,9 +106,11 @@ The application follows a modern full-stack architecture with clear separation b
 - June 24, 2025. Added demo project with sample files for testing
 - June 24, 2025. Enhanced mobile responsiveness with tabs-based navigation
 - June 24, 2025. Fixed Monaco Editor integration for real-world usage
+- June 24, 2025. Implemented reliable SimpleCodeEditor maintaining full AI code editing capabilities
 
 ## User Preferences
 
 Preferred communication style: Simple, everyday language in Portuguese (Brazilian).
 Device: Windows PC with mobile optimization requirements.
-Focus: AI must have direct access to text editor for code modifications.
+Critical requirement: AI must maintain full capability to edit and create code automatically.
+Editor preference: Reliable text editor with AI integration over complex Monaco setup.
