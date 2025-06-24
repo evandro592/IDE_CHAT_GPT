@@ -1,7 +1,7 @@
-# Permissões para que o GITHUB_TOKEN possa escrever no repositório
+# Permissões necessárias para push pelo GITHUB_TOKEN
 permissions:
-  contents: write  # para git push
-  pages: write     # se você usar o deploy Pages oficial
+  contents: write
+  pages: write
   id-token: write
 
 name: Build & Deploy Jekyll Site
@@ -13,31 +13,39 @@ on:
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
-
     steps:
-      # 1) Faz checkout e já mantém as credenciais para poder push
+
+      # 1) Check-out do código
       - name: Check out source code
         uses: actions/checkout@v3
         with:
-          persist-credentials: true  # garante que o GITHUB_TOKEN vai servir para fazer git push
+          persist-credentials: true  # mantém o GITHUB_TOKEN para git push
 
-      # 2) Configura Ruby (necessário para Jekyll)
+      # 2) Configura Ruby (para Jekyll; pule se seu site NÃO for Jekyll)
       - name: Set up Ruby 2.7
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: 2.7
 
-      # 3) Build do site Jekyll
+      # 3) Build do site
       - name: Build with Jekyll
         uses: actions/jekyll-build-pages@v1
         with:
-          source: "."           
-          destination: "docs"   
-          future: true          
+          source: "."           # raiz contém seu _config.yml, layouts, assets/, etc.
+          destination: "docs"   # pasta onde será gerado o site estático
+          future: true
           verbose: true
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      # 4) Commit & push do site compilado
+      # 4) Limpa o README e adiciona .nojekyll para forçar index.html
+      - name: Clean up docs folder
+        run: |
+          # remove o README.md que pode estar sobrescrevendo index.html
+          rm -f docs/README.md
+          # garante que GitHub Pages NÃO rode Jekyll dentro de docs/
+          touch docs/.nojekyll
+
+      # 5) Commit & push do site compilado
       - name: Commit compiled site
         run: |
           git config user.name "github-actions[bot]"
