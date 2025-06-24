@@ -10,6 +10,8 @@ import {
   RefreshCw,
   Circle
 } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 import type { File as FileType } from "@shared/schema";
 
 interface FileTreeProps {
@@ -35,6 +37,7 @@ export default function FileTree({
   onNewFile, 
   onOpenFolder 
 }: FileTreeProps) {
+  const queryClient = useQueryClient();
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
 
   // Build tree structure from flat file list
@@ -88,6 +91,104 @@ export default function FileTree({
       }
       return newSet;
     });
+  };
+
+  const handleOpenFolder = async () => {
+    try {
+      if ('showDirectoryPicker' in window) {
+        const directoryHandle = await (window as any).showDirectoryPicker();
+        await importFolderToProject(directoryHandle);
+      } else {
+        alert('Seu navegador não suporta a abertura de pastas. Use Chrome, Edge ou outro navegador compatível.');
+      }
+    } catch (error: any) {
+      if (error.name !== 'AbortError') {
+        console.error('Error opening folder:', error);
+        alert('Erro ao abrir pasta: ' + error.message);
+      }
+    }
+  };
+
+  const importFolderToProject = async (directoryHandle: FileSystemDirectoryHandle) => {
+    try {
+      const filesToImport: Array<{ path: string; content: string; language: string }> = [];
+      
+      const readDirectory = async (dirHandle: FileSystemDirectoryHandle, basePath: string = '') => {
+        for await (const [name, handle] of dirHandle.entries()) {
+          const fullPath = basePath ? `${basePath}/${name}` : name;
+          
+          if (handle.kind === 'file') {
+            try {
+              const file = await handle.getFile();
+              if (isTextFile(file.name)) {
+                const content = await file.text();
+                const language = getLanguageFromExtension(file.name);
+                filesToImport.push({ path: fullPath, content, language });
+              }
+            } catch (error) {
+              console.warn(`Não foi possível ler o arquivo ${fullPath}:`, error);
+            }
+          } else if (handle.kind === 'directory' && !shouldSkipDirectory(name)) {
+            await readDirectory(handle, fullPath);
+          }
+        }
+      };
+
+      await readDirectory(directoryHandle);
+      
+      if (filesToImport.length === 0) {
+        alert('Nenhum arquivo de texto foi encontrado na pasta selecionada.');
+        return;
+      }
+
+      const importPromises = filesToImport.map(({ path, content, language }) =>
+        apiRequest(`/api/files`, {
+          method: 'POST',
+          body: JSON.stringify({
+            projectId: 1,
+            path,
+            content,
+            language
+          })
+        })
+      );
+
+      await Promise.all(importPromises);
+      queryClient.invalidateQueries({ queryKey: ['/api/projects/1/files'] });
+      alert(`${filesToImport.length} arquivos importados com sucesso!`);
+      
+    } catch (error: any) {
+      console.error('Error importing folder:', error);
+      alert('Erro ao importar pasta: ' + error.message);
+    }
+  };
+
+  const isTextFile = (filename: string): boolean => {
+    const textExtensions = [
+      'js', 'jsx', 'ts', 'tsx', 'html', 'htm', 'css', 'scss', 'sass', 'less',
+      'json', 'xml', 'yaml', 'yml', 'txt', 'md', 'markdown', 'py', 'java',
+      'c', 'cpp', 'h', 'php', 'sql', 'sh', 'bat', 'ps1', 'rb', 'go', 'rs',
+      'vue', 'svelte', 'astro', 'env', 'gitignore', 'dockerfile', 'makefile'
+    ];
+    const ext = filename.split('.').pop()?.toLowerCase();
+    return textExtensions.includes(ext || '') || !filename.includes('.');
+  };
+
+  const shouldSkipDirectory = (dirName: string): boolean => {
+    const skipDirs = ['node_modules', '.git', 'dist', 'build', '.next', '.vscode', 'coverage'];
+    return skipDirs.includes(dirName) || dirName.startsWith('.');
+  };
+
+  const getLanguageFromExtension = (filename: string): string => {
+    const ext = filename.split('.').pop()?.toLowerCase();
+    const languageMap: Record<string, string> = {
+      'js': 'javascript', 'jsx': 'javascript', 'ts': 'typescript', 'tsx': 'typescript',
+      'html': 'html', 'htm': 'html', 'css': 'css', 'scss': 'scss', 'sass': 'sass',
+      'less': 'less', 'json': 'json', 'xml': 'xml', 'yaml': 'yaml', 'yml': 'yaml',
+      'md': 'markdown', 'py': 'python', 'java': 'java', 'php': 'php', 'sql': 'sql',
+      'rb': 'ruby', 'go': 'go', 'rs': 'rust', 'vue': 'vue', 'svelte': 'svelte'
+    };
+    return languageMap[ext || ''] || 'plaintext';
   };
 
   const getFileIcon = (filename: string) => {
@@ -181,7 +282,7 @@ export default function FileTree({
             variant="ghost" 
             size="icon" 
             className="h-6 w-6"
-            onClick={onOpenFolder}
+            onClick={handleOpenFolder}
             title="Abrir Pasta"
           >
             <RefreshCw className="h-3 w-3" />
