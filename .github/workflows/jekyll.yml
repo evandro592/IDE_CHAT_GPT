@@ -1,0 +1,35 @@
+name: Build & Deploy Jekyll Site
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source code
+        uses: actions/checkout@v3
+
+      - name: Set up Ruby 2.7
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 2.7
+
+      - name: Build with Jekyll
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: "."           # <-- raiz do repo tem seu _config.yml e assets
+          destination: "docs"   # ou "." se você quiser publicar na raiz
+          future: true
+          verbose: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # Se você estiver usando GitHub Pages para servir a pasta docs/, adicione também:
+      - name: Commit compiled site
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/_site
+          git commit -m "Deploy site (GitHub Actions)" || echo "No changes to commit"
+          git push origin main
