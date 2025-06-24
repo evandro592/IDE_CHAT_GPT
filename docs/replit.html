@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>AI Code IDE | IDE_CHAT_GPT</title>
+<meta name="generator" content="Jekyll v3.10.0" />
+<meta property="og:title" content="AI Code IDE" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="IDE_CHAT_GPT" />
+<meta property="og:description" content="IDE_CHAT_GPT" />
+<link rel="canonical" href="https://evandro592.github.io/IDE_CHAT_GPT/replit.html" />
+<meta property="og:url" content="https://evandro592.github.io/IDE_CHAT_GPT/replit.html" />
+<meta property="og:site_name" content="IDE_CHAT_GPT" />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="AI Code IDE" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebPage","description":"IDE_CHAT_GPT","headline":"AI Code IDE","url":"https://evandro592.github.io/IDE_CHAT_GPT/replit.html"}</script>
+<!-- End Jekyll SEO tag -->
+
+    <link rel="stylesheet" href="/IDE_CHAT_GPT/assets/css/style.css?v=5c73974fccd36ae89b8ee024e783e0532532886d">
+    <!-- start custom head snippets, customize with your own _includes/head-custom.html file -->
+
+<!-- Setup Google Analytics -->
+
+
+
+<!-- You can set your favicon here -->
+<!-- link rel="shortcut icon" type="image/x-icon" href="/IDE_CHAT_GPT/favicon.ico" -->
+
+<!-- end custom head snippets -->
+
+  </head>
+  <body>
+    <div class="container-lg px-3 my-5 markdown-body">
+      
+      <h1><a href="https://evandro592.github.io/IDE_CHAT_GPT/">IDE_CHAT_GPT</a></h1>
+      
+
+      <h1 id="ai-code-ide">AI Code IDE</h1>
+
+<h2 id="overview">Overview</h2>
+
+<p>This is a full-stack AI-powered IDE application built for both mobile and desktop use. The application features an integrated AI assistant for code editing, File System Access API support, Monaco Editor integration, and a responsive design optimized for all device types.</p>
+
+<h2 id="system-architecture">System Architecture</h2>
+
+<p>The application follows a modern full-stack architecture with clear separation between client and server components:</p>
+
+<h3 id="frontend-architecture">Frontend Architecture</h3>
+<ul>
+  <li><strong>Framework</strong>: React with TypeScript</li>
+  <li><strong>Bundler</strong>: Vite with custom configuration for monorepo structure</li>
+  <li><strong>Routing</strong>: Wouter for lightweight client-side routing</li>
+  <li><strong>State Management</strong>: TanStack Query for server state management</li>
+  <li><strong>UI Framework</strong>: Radix UI components with shadcn/ui styling</li>
+  <li><strong>Styling</strong>: Tailwind CSS with custom IDE theme variables</li>
+  <li><strong>Code Editor</strong>: Monaco Editor with custom setup and theming</li>
+</ul>
+
+<h3 id="backend-architecture">Backend Architecture</h3>
+<ul>
+  <li><strong>Runtime</strong>: Node.js with Express.js</li>
+  <li><strong>Language</strong>: TypeScript with ES modules</li>
+  <li><strong>Database</strong>: PostgreSQL with Drizzle ORM</li>
+  <li><strong>Database Provider</strong>: Neon serverless PostgreSQL</li>
+  <li><strong>API</strong>: RESTful endpoints with structured error handling</li>
+  <li><strong>Development</strong>: Hot module replacement with Vite integration</li>
+</ul>
+
+<h2 id="key-components">Key Components</h2>
+
+<h3 id="database-layer">Database Layer</h3>
+<ul>
+  <li><strong>Schema Definition</strong>: Centralized in <code class="language-plaintext highlighter-rouge">shared/schema.ts</code> using Drizzle ORM</li>
+  <li><strong>Tables</strong>:
+    <ul>
+      <li><code class="language-plaintext highlighter-rouge">projects</code>: Store project metadata and directory handles</li>
+      <li><code class="language-plaintext highlighter-rouge">files</code>: Store file content, paths, and modification status</li>
+      <li><code class="language-plaintext highlighter-rouge">chatMessages</code>: Store AI chat conversation history</li>
+    </ul>
+  </li>
+  <li><strong>Validation</strong>: Zod schemas for type-safe data validation</li>
+</ul>
+
+<h3 id="file-system-integration">File System Integration</h3>
+<ul>
+  <li><strong>Browser API</strong>: File System Access API for direct folder access</li>
+  <li><strong>Fallback</strong>: Memory storage implementation for unsupported browsers</li>
+  <li><strong>Project Management</strong>: Serialized directory handles for persistence</li>
+</ul>
+
+<h3 id="ai-integration">AI Integration</h3>
+<ul>
+  <li><strong>Provider</strong>: OpenAI GPT-4o for code assistance</li>
+  <li><strong>Features</strong>:
+    <ul>
+      <li>Code editing with contextual understanding</li>
+      <li>Chat-based code assistance</li>
+      <li>Code generation capabilities</li>
+    </ul>
+  </li>
+  <li><strong>API Key</strong>: Environment variable configuration</li>
+</ul>
+
+<h3 id="responsive-design">Responsive Design</h3>
+<ul>
+  <li><strong>Mobile-First</strong>: Optimized for touch interfaces</li>
+  <li><strong>Adaptive Layout</strong>: Tabs-based navigation on mobile, panels on desktop</li>
+  <li><strong>Virtual Keyboard</strong>: Custom programming symbols keyboard for mobile</li>
+  <li><strong>PWA Ready</strong>: Manifest and service worker configuration</li>
+</ul>
+
+<h2 id="data-flow">Data Flow</h2>
+
+<ol>
+  <li><strong>Project Initialization</strong>: User opens folder via File System Access API or creates new project</li>
+  <li><strong>File Management</strong>: Files are read from filesystem and cached in database</li>
+  <li><strong>Code Editing</strong>: Monaco Editor provides syntax highlighting and editing capabilities</li>
+  <li><strong>AI Assistance</strong>: User interactions with AI are processed through OpenAI API</li>
+  <li><strong>Persistence</strong>: Changes are saved to both filesystem (if available) and database</li>
+  <li><strong>Real-time Updates</strong>: TanStack Query manages cache invalidation and updates</li>
+</ol>
+
+<h2 id="external-dependencies">External Dependencies</h2>
+
+<h3 id="frontend-dependencies">Frontend Dependencies</h3>
+<ul>
+  <li><strong>UI Components</strong>: Comprehensive Radix UI component library</li>
+  <li><strong>Code Editor</strong>: Monaco Editor for professional code editing experience</li>
+  <li><strong>HTTP Client</strong>: Built-in fetch with custom wrapper for API calls</li>
+  <li><strong>Form Handling</strong>: React Hook Form with Zod resolvers</li>
+</ul>
+
+<h3 id="backend-dependencies">Backend Dependencies</h3>
+<ul>
+  <li><strong>Database</strong>: Drizzle ORM with PostgreSQL adapter</li>
+  <li><strong>AI Service</strong>: OpenAI SDK for chat completions</li>
+  <li><strong>Session Management</strong>: Connect-pg-simple for PostgreSQL session storage</li>
+</ul>
+
+<h3 id="development-tools">Development Tools</h3>
+<ul>
+  <li><strong>Build System</strong>: Vite with React plugin and custom configurations</li>
+  <li><strong>Type Checking</strong>: TypeScript with strict mode enabled</li>
+  <li><strong>Code Quality</strong>: ESM modules with path mapping for clean imports</li>
+</ul>
+
+<h2 id="deployment-strategy">Deployment Strategy</h2>
+
+<h3 id="replit-configuration">Replit Configuration</h3>
+<ul>
+  <li><strong>Environment</strong>: Node.js 20 with PostgreSQL 16</li>
+  <li><strong>Development</strong>: <code class="language-plaintext highlighter-rouge">npm run dev</code> with hot reload on port 5000</li>
+  <li><strong>Production Build</strong>: Vite build + esbuild bundle for server</li>
+  <li><strong>Database</strong>: Automatic PostgreSQL provisioning via environment variables</li>
+</ul>
+
+<h3 id="build-process">Build Process</h3>
+<ol>
+  <li><strong>Client Build</strong>: Vite bundles React application with optimizations</li>
+  <li><strong>Server Build</strong>: esbuild bundles Express server as ESM module</li>
+  <li><strong>Asset Handling</strong>: Static files served from <code class="language-plaintext highlighter-rouge">dist/public</code></li>
+  <li><strong>Database Migration</strong>: Drizzle migrations applied on deployment</li>
+</ol>
+
+<h3 id="environment-variables">Environment Variables</h3>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">DATABASE_URL</code>: PostgreSQL connection string (auto-provisioned)</li>
+  <li><code class="language-plaintext highlighter-rouge">OPENAI_API_KEY</code>: Required for AI functionality</li>
+  <li><code class="language-plaintext highlighter-rouge">NODE_ENV</code>: Development/production environment flag</li>
+</ul>
+
+<h2 id="changelog">Changelog</h2>
+<ul>
+  <li>June 24, 2025. Initial setup</li>
+  <li>June 24, 2025. Configured AI integration with Portuguese language support</li>
+  <li>June 24, 2025. Added demo project with sample files for testing</li>
+  <li>June 24, 2025. Enhanced mobile responsiveness with tabs-based navigation</li>
+  <li>June 24, 2025. Fixed Monaco Editor integration for real-world usage</li>
+  <li>June 24, 2025. Implemented reliable SimpleCodeEditor maintaining full AI code editing capabilities</li>
+  <li>June 24, 2025. Added File System Access API integration for importing folders directly from browser</li>
+  <li>June 24, 2025. Created local setup documentation with complete installation instructions</li>
+</ul>
+
+<h2 id="user-preferences">User Preferences</h2>
+
+<p>Preferred communication style: Simple, everyday language in Portuguese (Brazilian).
+Device: Windows PC with mobile optimization requirements.
+Critical requirement: AI must maintain full capability to edit and create code automatically.
+Editor preference: Reliable text editor with AI integration over complex Monaco setup.</p>
+
+
+      
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.1.0/anchor.min.js" integrity="sha256-lZaRhKri35AyJSypXXs4o6OPFTbTmUoltBbDCbdzegg=" crossorigin="anonymous"></script>
+    <script>anchors.add();</script>
+  </body>
+</html>

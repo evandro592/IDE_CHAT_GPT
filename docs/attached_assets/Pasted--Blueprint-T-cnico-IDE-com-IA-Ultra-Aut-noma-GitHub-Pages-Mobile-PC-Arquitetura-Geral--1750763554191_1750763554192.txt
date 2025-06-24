@@ -1,0 +1,94 @@
+🏗️ Blueprint Técnico – IDE com IA Ultra Autônoma (GitHub Pages + Mobile + PC)
+🔥 Arquitetura Geral
+Frontend: 100% Client-side (Web App + PWA)
+
+Deploy: GitHub Pages
+
+Backends externos: OpenAI API (ChatGPT)
+
+Armazenamento:
+
+File System Access API (preferencial)
+
+IndexedDB (fallback)
+
+Editor: Monaco Editor (VSCode API) ou CodeMirror
+
+Framework: Sugerido React, mas pode ser Vanilla JS otimizado
+
+🌐 Estrutura de Pastas
+bash
+Copiar
+Editar
+/src
+  /components
+    FileTree.jsx
+    CodeEditor.jsx
+    ChatAI.jsx
+    Toolbar.jsx
+    Settings.jsx
+  /hooks
+  /services
+    fileSystem.js
+    openaiApi.js
+    projectManager.js
+  /utils
+  /assets
+  App.jsx
+  index.js
+/public
+  index.html
+  manifest.json
+  icons/
+/docs
+  todo.md
+  guia-uso.md
+  changelog.md
+🎯 Fluxo de Funcionalidade da IA
+✔️ Acesso à Árvore de Arquivos
+Ler diretórios e listar arquivos/pastas
+
+Criar nova pasta ou arquivo (/src/utils/helpers.js)
+
+Renomear arquivo ou pasta
+
+Excluir arquivos ou pastas
+
+✔️ Acesso ao Editor de Texto
+Ler o conteúdo do arquivo aberto no editor
+
+Editar qualquer linha, bloco ou função no código
+
+Substituir trechos de código, refatorar, comentar, remover
+
+Criar novos arquivos diretamente do chat
+
+✔️ Manipulação Geral
+Gerar código completo para novas funcionalidades
+
+Aplicar refatorações em múltiplos arquivos
+
+Modificar a própria interface da IDE (ex.: mudar tema, layout ou adicionar botões)
+
+Configurar o projeto (ex.: adicionar bibliotecas, modificar configurações PWA)
+
+💬 Exemplos de Comandos no Chat IA
+Comando	Ação
+"Crie um arquivo chamado api.js dentro da pasta /src/services"	Cria o arquivo e abre no editor
+"Adicione uma função chamada getUserData nesse arquivo"	Insere a função no arquivo atual
+"Renomeie o arquivo /src/utils/helpers.js para utils.js"	Faz a renomeação na árvore
+"Apague a função handleSubmit do arquivo aberto"	Remove o trecho correspondente
+"Refatore esse código para usar async/await"	Faz a alteração no código ativo
+"Altere o tema da IDE para escuro"	Muda o tema global
+"Adicione um botão no topo que limpa o terminal"	Modifica o layout dinamicamente
+
+🔗 Fluxo de Acesso à Pasta do Dispositivo
+✅ Solicitar permissão ao usuário via File System Access API.
+
+✅ Gerar um handle persistente para o diretório escolhido.
+
+✅ Listar arquivos e subpastas em tempo real na árvore.
+
+✅ Sincronizar alterações locais imediatamente (criação, edição, exclusão).
+
+✅ A IA opera diretamente sobre esses handles com leitura e escrita na
