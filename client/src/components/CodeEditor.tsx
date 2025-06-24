@@ -35,7 +35,7 @@ export default function CodeEditor({ file, content, onChange, onSave }: CodeEdit
   }, [file]);
 
   useEffect(() => {
-    if (editorRef.current && file) {
+    if (editorRef.current && file && content !== undefined) {
       setupMonaco(editorRef.current, content, onChange, file?.language || 'javascript')
         .then((editor) => {
           monacoRef.current = editor;
@@ -52,11 +52,15 @@ export default function CodeEditor({ file, content, onChange, onSave }: CodeEdit
     return () => {
       window.removeEventListener('monaco-save', handleSave);
     };
-  }, [file, onSave]);
+  }, [file, content, onChange, onSave]);
 
   useEffect(() => {
-    if (monacoRef.current && content !== monacoRef.current.getValue()) {
+    if (monacoRef.current && content !== undefined && content !== monacoRef.current.getValue()) {
+      const position = monacoRef.current.getPosition();
       monacoRef.current.setValue(content);
+      if (position) {
+        monacoRef.current.setPosition(position);
+      }
     }
   }, [content]);
 

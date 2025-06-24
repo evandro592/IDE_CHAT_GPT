@@ -1,28 +1,42 @@
 import * as monaco from 'monaco-editor';
-import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
-import jsonWorker from 'monaco-editor/esm/vs/language/json/json.worker?worker';
-import cssWorker from 'monaco-editor/esm/vs/language/css/css.worker?worker';
-import htmlWorker from 'monaco-editor/esm/vs/language/html/html.worker?worker';
-import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker';
 
-// Configure Monaco workers for browser environment
+// Configure Monaco workers for Vite environment
 if (typeof window !== 'undefined') {
   window.MonacoEnvironment = {
-    getWorker(_, label) {
-      if (label === 'json') {
-        return new jsonWorker();
+    getWorker(workerId: string, label: string) {
+      const getWorkerModule = (moduleUrl: string, label: string) => {
+        return new Worker(self.MonacoEnvironment!.getWorkerUrl!(moduleUrl, label), {
+          name: label,
+          type: 'module',
+        });
+      };
+
+      switch (label) {
+        case 'json':
+          return getWorkerModule('/monaco-editor/esm/vs/language/json/json.worker', 'json');
+        case 'css':
+        case 'scss':
+        case 'less':
+          return getWorkerModule('/monaco-editor/esm/vs/language/css/css.worker', 'css');
+        case 'html':
+        case 'handlebars':
+        case 'razor':
+          return getWorkerModule('/monaco-editor/esm/vs/language/html/html.worker', 'html');
+        case 'typescript':
+        case 'javascript':
+          return getWorkerModule('/monaco-editor/esm/vs/language/typescript/ts.worker', 'typescript');
+        default:
+          return getWorkerModule('/monaco-editor/esm/vs/editor/editor.worker', 'editor');
       }
-      if (label === 'css' || label === 'scss' || label === 'less') {
-        return new cssWorker();
-      }
-      if (label === 'html' || label === 'handlebars' || label === 'razor') {
-        return new htmlWorker();
-      }
-      if (label === 'typescript' || label === 'javascript') {
-        return new tsWorker();
-      }
-      return new editorWorker();
     },
+    getWorkerUrl(moduleId: string, label: string) {
+      return `data:text/javascript;charset=utf-8,${encodeURIComponent(`
+        self.MonacoEnvironment = {
+          baseUrl: 'https://unpkg.com/monaco-editor@0.44.0/min/'
+        };
+        importScripts('https://unpkg.com/monaco-editor@0.44.0/min/vs/base/worker/workerMain.js');
+      `)}`;
+    }
   };
 }
 
@@ -43,6 +57,18 @@ export async function setupMonaco(
 
   // Clear container
   container.innerHTML = '';
+
+  // Wait for Monaco to be available
+  if (typeof window !== 'undefined' && !(window as any).monaco) {
+    await new Promise((resolve) => {
+      if ((window as any).require) {
+        (window as any).require(['vs/editor/editor.main'], resolve);
+      } else {
+        // Fallback - wait a bit and try again
+        setTimeout(resolve, 100);
+      }
+    });
+  }
 
   // Configure Monaco themes
   monaco.editor.defineTheme('ide-dark', {
@@ -184,8 +210,12 @@ export async function setupMonaco(
 }
 
 export function updateMonacoContent(content: string) {
-  if (monacoInstance && monacoInstance.getValue() !== content) {
+  if (monacoInstance && content !== undefined && monacoInstance.getValue() !== content) {
+    const position = monacoInstance.getPosition();
     monacoInstance.setValue(content);
+    if (position) {
+      monacoInstance.setPosition(position);
+    }
   }
 }
 
