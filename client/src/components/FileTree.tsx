@@ -94,53 +94,69 @@ export default function FileTree({
   };
 
   const handleOpenFolder = async () => {
+    console.log('handleOpenFolder called');
     try {
       if ('showDirectoryPicker' in window) {
+        console.log('showDirectoryPicker available');
         const directoryHandle = await (window as any).showDirectoryPicker();
+        console.log('Directory selected:', directoryHandle);
         await importFolderToProject(directoryHandle);
       } else {
+        console.log('showDirectoryPicker not available');
         alert('Seu navegador não suporta a abertura de pastas. Use Chrome, Edge ou outro navegador compatível.');
       }
     } catch (error: any) {
+      console.error('Error in handleOpenFolder:', error);
       if (error.name !== 'AbortError') {
-        console.error('Error opening folder:', error);
         alert('Erro ao abrir pasta: ' + error.message);
       }
     }
   };
 
   const importFolderToProject = async (directoryHandle: FileSystemDirectoryHandle) => {
+    console.log('Starting import for directory:', directoryHandle.name);
     try {
       const filesToImport: Array<{ path: string; content: string; language: string }> = [];
       
       const readDirectory = async (dirHandle: FileSystemDirectoryHandle, basePath: string = '') => {
+        console.log('Reading directory:', basePath || 'root');
         for await (const [name, handle] of dirHandle.entries()) {
           const fullPath = basePath ? `${basePath}/${name}` : name;
+          console.log('Processing:', fullPath, 'kind:', handle.kind);
           
           if (handle.kind === 'file') {
             try {
               const file = await handle.getFile();
+              console.log('File size:', file.size, 'type:', file.type, 'name:', file.name);
               if (isTextFile(file.name)) {
                 const content = await file.text();
                 const language = getLanguageFromExtension(file.name);
                 filesToImport.push({ path: fullPath, content, language });
+                console.log('Added file:', fullPath, 'language:', language);
+              } else {
+                console.log('Skipped non-text file:', file.name);
               }
             } catch (error) {
               console.warn(`Não foi possível ler o arquivo ${fullPath}:`, error);
             }
           } else if (handle.kind === 'directory' && !shouldSkipDirectory(name)) {
+            console.log('Entering directory:', name);
             await readDirectory(handle, fullPath);
+          } else {
+            console.log('Skipped directory:', name);
           }
         }
       };
 
       await readDirectory(directoryHandle);
+      console.log('Total files to import:', filesToImport.length);
       
       if (filesToImport.length === 0) {
         alert('Nenhum arquivo de texto foi encontrado na pasta selecionada.');
         return;
       }
 
+      console.log('Importing files...');
       const importPromises = filesToImport.map(({ path, content, language }) =>
         apiRequest(`/api/files`, {
           method: 'POST',
@@ -155,6 +171,7 @@ export default function FileTree({
 
       await Promise.all(importPromises);
       queryClient.invalidateQueries({ queryKey: ['/api/projects/1/files'] });
+      console.log('Import completed successfully');
       alert(`${filesToImport.length} arquivos importados com sucesso!`);
       
     } catch (error: any) {
@@ -285,7 +302,7 @@ export default function FileTree({
             onClick={handleOpenFolder}
             title="Abrir Pasta"
           >
-            <RefreshCw className="h-3 w-3" />
+            <FolderOpen className="h-3 w-3" />
           </Button>
         </div>
       </div>

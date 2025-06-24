@@ -6,6 +6,7 @@ import SimpleCodeEditor from "@/components/SimpleCodeEditor";
 import ChatAI from "@/components/ChatAI";
 import ResizablePanel from "@/components/ResizablePanel";
 import MobileKeyboard from "@/components/MobileKeyboard";
+import TestFolderImport from "@/components/TestFolderImport";
 import { useResponsive } from "@/hooks/use-responsive";
 import { useFileSystem } from "@/hooks/use-file-system";
 import { Button } from "@/components/ui/button";
