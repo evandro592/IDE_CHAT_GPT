@@ -120,7 +120,7 @@ export default function FileTree({
       
       const readDirectory = async (dirHandle: FileSystemDirectoryHandle, basePath: string = '') => {
         console.log('Reading directory:', basePath || 'root');
-        for await (const [name, handle] of dirHandle.entries()) {
+        for await (const [name, handle] of (dirHandle as any).entries()) {
           const fullPath = basePath ? `${basePath}/${name}` : name;
           console.log('Processing:', fullPath, 'kind:', handle.kind);
           
@@ -158,14 +158,11 @@ export default function FileTree({
 
       console.log('Importing files...');
       const importPromises = filesToImport.map(({ path, content, language }) =>
-        apiRequest(`/api/files`, {
-          method: 'POST',
-          body: JSON.stringify({
-            projectId: 1,
-            path,
-            content,
-            language
-          })
+        apiRequest(`/api/files`, 'POST', {
+          projectId: 1,
+          path,
+          content,
+          language
         })
       );
 

@@ -52,7 +52,7 @@ export class FileSystemManager {
 
     const entries: FileEntry[] = [];
     
-    for await (const [name, entryHandle] of handle.entries()) {
+    for await (const [name, entryHandle] of (handle as any).entries()) {
       const entry: FileEntry = {
         name,
         path: name, // Simple path for now

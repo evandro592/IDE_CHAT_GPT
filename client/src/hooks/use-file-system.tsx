@@ -37,7 +37,7 @@ export function useFileSystem() {
     const files: FileSystemFile[] = [];
     const directories: FileSystemDirectory[] = [];
 
-    for await (const [name, handle] of dirHandle.entries()) {
+    for await (const [name, handle] of (dirHandle as any).entries()) {
       if (handle.kind === 'file') {
         files.push({
           name,

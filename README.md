@@ -29,6 +29,13 @@ echo "OPENAI_API_KEY=sua-chave-openai-aqui" > .env
 ```
 
 4. **Execute o projeto**
+
+**No Windows (PowerShell/CMD):**
+```cmd
+npm run dev:win
+```
+
+**No Linux/Mac:**
 ```bash
 npm run dev
 ```
@@ -40,21 +47,37 @@ http://localhost:5000
 
 ## 🔧 Comandos Disponíveis
 
+**Windows:**
+```cmd
+# Desenvolvimento (servidor + cliente)
+npm run dev:win
+
+# Executar versão de produção
+npm run start:win
+
+# Build para produção
+npm run build
+```
+
+**Linux/Mac:**
 ```bash
 # Desenvolvimento (servidor + cliente)
 npm run dev
 
-# Build para produção
-npm run build
-
 # Executar versão de produção
 npm start
 
+# Build para produção
+npm run build
+```
+
+**Ambos:**
+```bash
 # Instalar dependências
 npm install
 
-# Limpar cache
-npm run clean
+# Verificar tipos TypeScript
+npm run check
 ```
 
 ## 🌟 Funcionalidades
